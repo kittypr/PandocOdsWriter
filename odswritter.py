@@ -66,14 +66,17 @@ PTINTENCM = 284
 
 def count_height(row, cell):
     style_name = cell.getAttribute('stylename')
-    style = saved_styles[style_name]
-    text_prop = style.getElementsByType(TextProperties)
     try:
-        text_prop = text_prop[0]
-        font_size = str(text_prop.getAttribute('fontsize'))
-        font_size = font_size.replace('pt', '')
-        font_size = int(font_size)
-    except IndexError:
+        style = saved_styles[style_name]
+        text_prop = style.getElementsByType(TextProperties)
+        try:
+            text_prop = text_prop[0]
+            font_size = str(text_prop.getAttribute('fontsize'))
+            font_size = font_size.replace('pt', '')
+            font_size = int(font_size)
+        except IndexError:
+            font_size = 10
+    except KeyError:
         font_size = 10
     symbols_in_string = PTINTENCM // font_size + 1
     height = font_size*(len(string_to_write) // symbols_in_string + 1) + 4
@@ -365,10 +368,7 @@ def main():
     except PermissionError as err:
         print("No access to ", output)
         print(err.strerror)
-    # In case, you can use "pandoc -t json | ... ODSwriter.py ... | pandoc -json ...
-    # we will send the same json object to pandoc
-    json.dump(doc, STDOUT)
-    STDOUT.flush()
+
 
 if __name__ == '__main__':
     main()
