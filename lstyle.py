@@ -14,6 +14,7 @@ st_dict = {'header1': def_header1,
            'text': def_text
            }
 
+
 def load_style(name):
     try:
         path = str(sys.argv[0])
