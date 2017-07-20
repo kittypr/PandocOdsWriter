@@ -376,7 +376,6 @@ if __name__ == '__main__':
         shell=True,
         stdout=PIPE, stderr=PIPE
     )
-    proc.wait()  # дождаться выполнения
     res = proc.communicate()
     if res[1]:
         print(str(res[1]))
@@ -388,10 +387,8 @@ if __name__ == '__main__':
             try:
                 s = int(args.separator[0])
                 separator = s
-                print(separator, s)
                 d = json.loads(res[0])
                 main(d)
-                print('finished')
             except IndexError:
                 print('You entered invalid separator')
             except ValueError:
