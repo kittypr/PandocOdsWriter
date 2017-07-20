@@ -382,15 +382,15 @@ if __name__ == '__main__':
         print(str(res[1]))
     else:
         if args.separator is None:
-            doc = json.loads(res[0])
-            main(doc)
+            d = json.loads(res[0])
+            main(d)
         if args.separator is not None:
             try:
                 s = int(args.separator[0])
                 separator = s
                 print(separator, s)
-                doc = json.loads(res[0])
-                main(doc)
+                d = json.loads(res[0])
+                main(d)
                 print('finished')
             except IndexError:
                 print('You entered invalid separator')
