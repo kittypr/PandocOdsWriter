@@ -3,6 +3,7 @@ import argparse
 from subprocess import Popen, PIPE
 
 from lstyle import load_style
+
 from odf.opendocument import OpenDocumentSpreadsheet
 from odf.style import Style, TableColumnProperties, TableRowProperties, TextProperties
 from odf.table import Table, TableRow, TableCell, TableColumn
@@ -134,17 +135,17 @@ def write_text():
     string_to_write = ''
 
 
-def write_bullet(bull_list, table_indicate):
+def write_bullet(bull_list, without_write):
     global bullet
     bullet = 1
-    list_parse(bull_list['c'],  table_indicate)
+    list_parse(bull_list['c'], without_write)
     bullet = 0
 
 
-def write_ord(ord_list,  table_indicate):
+def write_ord(ord_list, without_write):
     global ordered
     ordered = 1
-    list_parse(ord_list['c'],  table_indicate)
+    list_parse(ord_list['c'], without_write)
     ordered = 0
 
 
@@ -193,7 +194,7 @@ def write_raw(raw):
     string_to_write = string_to_write + raw['c'][1]
 
 
-def write_special_block(block,  table_indicate):
+def write_special_block(block, without_write):
     """Write special blocks with attributes
 
     Since, element with title "Div" or "Span" or "Header" has special structure of 'c'(Content) field, that looks like:
@@ -210,10 +211,10 @@ def write_special_block(block,  table_indicate):
     if block['t'] == 'Header':
         header_level = block['c'][0]
         content = 2
-    if (not table_indicate) and string_to_write:
+    if (not without_write) and string_to_write:
         write_text()
-    list_parse(block['c'][content], True)
-    if not table_indicate:
+    list_parse(block['c'][content], without_write=True)
+    if not without_write:
         write_text()
     header_level = 0
 
@@ -242,7 +243,6 @@ def write_table(tab):
     global string_to_write
     if string_to_write:
         write_text()
-    global current_row
     # Add empty line before table
     row = TableRow()
     table.addElement(row)
@@ -254,7 +254,7 @@ def write_table(tab):
         row.addElement(cell)
         for col in headers:
             cell = TableCell()
-            list_parse(col, table_indicate=True)
+            list_parse(col, without_write=True)
             content = P(text=string_to_write)
             cell.addElement(content)
             add_style(cell, table_header)
@@ -269,7 +269,7 @@ def write_table(tab):
         row.addElement(cell)
         for col in line:
             cell = TableCell()
-            list_parse(col, table_indicate=True)
+            list_parse(col, without_write=True)
             content = P(text=string_to_write)
             cell.addElement(content)
             add_style(cell, table_content)
@@ -292,7 +292,7 @@ def write_table(tab):
 # so we should parse list again and etc.
 # That's why we have there two functions - for parsing lists and for parsing dictionaries - that should call each other
 
-def dict_parse(dictionary,  table_indicate=False):
+def dict_parse(dictionary, without_write=False):
     """Parse dictionaries"""
 
     global string_to_write
@@ -301,20 +301,20 @@ def dict_parse(dictionary,  table_indicate=False):
     elif dictionary['t'] == 'CodeBlock' or dictionary['t'] == 'Code':
         write_code(dictionary)
     elif dictionary['t'] == 'Div' or dictionary['t'] == 'Span' or dictionary['t'] == 'Header':
-        write_special_block(dictionary, table_indicate)
+        write_special_block(dictionary, without_write)
     elif dictionary['t'] == 'Math':
         write_math(dictionary)
     elif dictionary['t'] == 'Link':
         write_link(dictionary)
     elif dictionary['t'] == 'BulletList':
-        write_bullet(dictionary, table_indicate)
+        write_bullet(dictionary, without_write)
     elif dictionary['t'] == 'OrderedList':
-        write_ord(dictionary, table_indicate)
+        write_ord(dictionary, without_write)
     elif 'c' in dictionary:
         if type(dictionary['c']) == str:
             string_to_write = string_to_write + dictionary['c']
         if type(dictionary['c']) == list:
-            list_parse(dictionary['c'], table_indicate)
+            list_parse(dictionary['c'], without_write)
     else:
         if dictionary['t'] == 'Space':
             string_to_write = string_to_write + ' '
@@ -322,23 +322,23 @@ def dict_parse(dictionary,  table_indicate=False):
             string_to_write = string_to_write + '\n'
         elif dictionary['t'] == 'LineBreak':
             string_to_write = string_to_write + '\n\n'
-            if not table_indicate:
+            if not without_write:
                 write_text()
         else:
             string_to_write = string_to_write
     if dictionary['t'] == 'Para':
         string_to_write = string_to_write + '\n'
-        if not table_indicate:
+        if not without_write:
             write_text()
 
 
-def list_parse(content_list, table_indicate=False):
+def list_parse(content_list, without_write=False):
     """Parse lists"""
     for item in content_list:
         if type(item) == dict:
-            dict_parse(item, table_indicate)
+            dict_parse(item, without_write)
         if type(item) == list:
-            list_parse(item, table_indicate)
+            list_parse(item, without_write)
         else:
             continue
 
