@@ -63,6 +63,12 @@ ordered = 0
 saved_styles = {}
 PTINTENCM = 284
 
+def write_sheet():
+    widthwide = Style(name="Wwide", family="table-column")
+    widthwide.addElement(TableColumnProperties(columnwidth="10cm"))
+    ods.automaticstyles.addElement(widthwide)
+    table.addElement(TableColumn(stylename='Wwide'))
+    ods.spreadsheet.addElement(table)
 
 def count_height(row, cell):
     style_name = cell.getAttribute('stylename')
@@ -114,9 +120,14 @@ def write_text():
     row = TableRow()
     cell = TableCell()
     if header_level != 0 and header_level > 0:
-        if header[header_level] is None:
-            header[header_level] = 'header' + str(header_level)
+        if header_level > (len(header) - 1):
+            for i in range(len(header), header_level+1):
+                header.append('header' + str(i))
         add_style(cell, header[header_level])
+        if header_level == 1:
+            if table.hasChildNodes():
+                write_sheet()
+            table = Table(name=string_to_write)
     else:
         add_style(cell, simple_text)
     if bullet:
@@ -208,9 +219,9 @@ def write_special_block(block,  table_indicate):
     if block['t'] == 'Header':
         header_level = block['c'][0]
         content = 2
-    if not table_indicate:
+    if (not table_indicate) and string_to_write:
         write_text()
-    list_parse(block['c'][content], table)
+    list_parse(block['c'][content], True)
     if not table_indicate:
         write_text()
     header_level = 0
@@ -358,11 +369,7 @@ def main():
         list_parse(doc['blocks'])
     else:
         list_parse(doc[1])
-    widthwide = Style(name="Wwide", family="table-column")
-    widthwide.addElement(TableColumnProperties(columnwidth="10cm"))
-    ods.automaticstyles.addElement(widthwide)
-    table.addElement(TableColumn(stylename='Wwide'))
-    ods.spreadsheet.addElement(table)
+    write_sheet()
     try:
         ods.save(output)
     except PermissionError as err:
