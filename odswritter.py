@@ -1,7 +1,6 @@
 import json
 import argparse
-import sys
-import io
+from subprocess import Popen, PIPE
 
 from lstyle import load_style
 from odf.opendocument import OpenDocumentSpreadsheet
@@ -21,28 +20,16 @@ header = ['header0', 'header1', 'header2']
 table_header = 'tablehead'
 table_content = 'tablebody'
 simple_text = 'text'
-# Pandoc uses UTF-8 for both input and output; so must its filters.  This is
-# handled differently depending on the python version.
-if sys.version_info > (3,):
-    # Py3 strings are unicode: https://docs.python.org/3.5/howto/unicode.html.
-    # Character encoding/decoding is performed automatically at stream
-    # interfaces: https://stackoverflow.com/questions/16549332/.
-    # Set it to UTF-8 for all streams.
-    STDIN = io.TextIOWrapper(sys.stdin.buffer, 'utf-8', 'strict')
-    STDOUT = io.TextIOWrapper(sys.stdout.buffer, 'utf-8', 'strict')
-    STDERR = io.TextIOWrapper(sys.stderr.buffer, 'utf-8', 'strict')
-else:
-    # Py2 strings are ASCII bytes.  Encoding/decoding is handled separately.
-    # See: https://docs.python.org/2/howto/unicode.html.
-    STDIN = sys.stdin
-    STDOUT = sys.stdout
-    STDERR = sys.stdout
+
 
 # Read the command-line arguments
 parser = argparse.ArgumentParser(description='Pandoc ODS writer. This is Pandoc filter, but there is no opportunity '
                                              'write .ods files easier way. So, use "out.ods" '
                                              'option to write .ods files with this filter')
+parser.add_argument('input', help='Input file. Use Pandoc`s input formats.', action='store')
 parser.add_argument('output', help='Output file. Use .ods filename extension.', action='store')
+parser.add_argument('-s', '--separator', nargs=1, help='Header level to separate sheets, 0 by default(no separation).',
+                    action='store')
 parser.add_argument('--pandocversion', help='The Pandoc version.')
 args = parser.parse_args()
 
@@ -61,7 +48,9 @@ header_level = 0
 bullet = 0
 ordered = 0
 saved_styles = {}
+separator = 0
 PTINTENCM = 284
+
 
 def write_sheet():
     widthwide = Style(name="Wwide", family="table-column")
@@ -69,6 +58,7 @@ def write_sheet():
     ods.automaticstyles.addElement(widthwide)
     table.addElement(TableColumn(stylename='Wwide'))
     ods.spreadsheet.addElement(table)
+
 
 def count_height(row, cell):
     style_name = cell.getAttribute('stylename')
@@ -117,6 +107,7 @@ def write_text():
     global ordered
     global bullet
     global table
+    global separator
     row = TableRow()
     cell = TableCell()
     if header_level != 0 and header_level > 0:
@@ -124,7 +115,7 @@ def write_text():
             for i in range(len(header), header_level+1):
                 header.append('header' + str(i))
         add_style(cell, header[header_level])
-        if header_level == 1:
+        if header_level == separator:
             if table.hasChildNodes():
                 write_sheet()
             table = Table(name=string_to_write)
@@ -352,7 +343,7 @@ def list_parse(content_list, table_indicate=False):
             continue
 
 
-def main():
+def main(doc):
     """Main function
 
     Get JSON object from pandoc, parse it, save result
@@ -364,7 +355,7 @@ def main():
     #                               meta: ...
     #                               blocks: .......}
     # in blocks we have all file-content, that's why we will parse it
-    doc = json.loads(STDIN.read())
+    # doc = json.loads(STDIN.read())
     if type(doc) == dict:
         list_parse(doc['blocks'])
     else:
@@ -378,4 +369,30 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    source = args.input
+    command = 'pandoc ' + source + ' -t json'
+    proc = Popen(
+        command,
+        shell=True,
+        stdout=PIPE, stderr=PIPE
+    )
+    proc.wait()  # дождаться выполнения
+    res = proc.communicate()
+    if res[1]:
+        print(str(res[1]))
+    else:
+        if args.separator is None:
+            doc = json.loads(res[0])
+            main(doc)
+        if args.separator is not None:
+            try:
+                s = int(args.separator[0])
+                separator = s
+                print(separator, s)
+                doc = json.loads(res[0])
+                main(doc)
+                print('finished')
+            except IndexError:
+                print('You entered invalid separator')
+            except ValueError:
+                print('You entered invalid separator')
