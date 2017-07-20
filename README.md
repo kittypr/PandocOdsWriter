@@ -2,7 +2,7 @@
 This is Pandoc's 'filter', that write .ODS files from Pandoc-json object.
 Usage:
 
-*python odswritter.py inputfile outputfile.ods -s N
+*python odswritter.py inputfile outputfile.ods -s N*
 
 where is - N - your integer - header level, that separate sheets. 
 
