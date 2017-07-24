@@ -1,14 +1,13 @@
 import json
 import argparse
-import copy
 from subprocess import Popen, PIPE
 
-from lstyle import load_style, add_fmt
+from lstyle import load_style, add_fmt, st_dict
 
 from odf.opendocument import OpenDocumentSpreadsheet
 from odf.style import Style, TableColumnProperties, TableRowProperties, TextProperties
 from odf.table import Table, TableRow, TableCell, TableColumn
-from odf.text import P, Span
+from odf.text import P
 
 # use command - pandoc yourInputFile.yourExetention -t json | python ODSwriter.py yourOutputFile.ods
 # DO NOT specify output file in last pandoc's command, because pandoc will rewrite it and 'kill'
@@ -53,8 +52,8 @@ saved_styles = {}
 separator = 0
 PTINTENCM = 284
 
-fmt = {'Strong': 0,
-       'Emph': 0,
+fmt = {'Emph': 0,
+       'Strong': 0,
        'Strikeout': 0}
 
 
@@ -269,7 +268,7 @@ def write_table(tab):
             content = P(text=string_to_write)
             for key in fmt.keys():
                 if fmt[key] == 1:
-                    new_style = add_fmt(style=saved_styles[table_header], key=key)
+                    new_style = add_fmt(style=st_dict[cell.getAttribute(attr='stylename')], key=key)
                     ods.styles.addElement(new_style)
                     fmt[key] = 0
                     cell = TableCell(stylename=new_style.getAttribute(attr='name'))
@@ -290,7 +289,7 @@ def write_table(tab):
             content = P(text=string_to_write)
             for key in fmt.keys():
                 if fmt[key] == 1:
-                    new_style = add_fmt(style=saved_styles[table_content], key=key)
+                    new_style = add_fmt(style=st_dict[cell.getAttribute(attr='stylename')], key=key)
                     ods.styles.addElement(new_style)
                     fmt[key] = 0
                     cell = TableCell(stylename=new_style.getAttribute(attr='name'))

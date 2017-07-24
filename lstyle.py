@@ -19,6 +19,7 @@ bold = TextProperties(fontweight='bold')
 italic = TextProperties(fontstyle='italic')
 line_through = TextProperties(textlinethroughstyle='solid', textlinethroughtype='single')
 
+
 fmt_dict = {'Strong': bold,
             'Emph': italic,
             'Strikeout': line_through}
@@ -34,6 +35,7 @@ def load_style(name):
         try:
             style = source.getStyleByName(name)
             style.setAttribute(attr='family', value='table-cell')
+            st_dict[name] = style
         except AssertionError:
             style = None
     except FileNotFoundError:
@@ -90,6 +92,6 @@ def add_fmt(style, key):
                 except ValueError:
                     continue
             new_style.addElement(copy_child)
-        new_style.addElement(fmt_dict[key])
+            new_style.addElement(fmt_dict[key])
         st_dict[new_name] = new_style
     return new_style
