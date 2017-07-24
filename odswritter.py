@@ -1,13 +1,14 @@
 import json
 import argparse
+import copy
 from subprocess import Popen, PIPE
 
-from lstyle import load_style
+from lstyle import load_style, add_fmt
 
 from odf.opendocument import OpenDocumentSpreadsheet
 from odf.style import Style, TableColumnProperties, TableRowProperties, TextProperties
 from odf.table import Table, TableRow, TableCell, TableColumn
-from odf.text import P
+from odf.text import P, Span
 
 # use command - pandoc yourInputFile.yourExetention -t json | python ODSwriter.py yourOutputFile.ods
 # DO NOT specify output file in last pandoc's command, because pandoc will rewrite it and 'kill'
@@ -52,6 +53,10 @@ saved_styles = {}
 separator = 0
 PTINTENCM = 284
 
+fmt = {'Strong': 0,
+       'Emph': 0,
+       'Strikeout': 0}
+
 
 def write_sheet():
     widthwide = Style(name="Wwide", family="table-column")
@@ -86,14 +91,16 @@ def count_height(row, cell):
 
 
 def add_style(cell, name):
-    global table
-    style = load_style(name)
-    if style is not None:
-        global ods
-        global saved_styles
-        saved_styles[name] = style
-        ods.styles.addElement(style)
-        cell.setAttribute(attr='stylename', value=name)
+    global saved_styles
+    global ods
+    try:
+        saved_styles[name]
+    except KeyError:
+        style = load_style(name)
+        if style is not None:
+            saved_styles[name] = style
+            ods.styles.addElement(style)
+    cell.setAttribute(attr='stylename', value=name)
 
 
 def write_text():
@@ -241,6 +248,9 @@ def write_table(tab):
     """
     global table
     global string_to_write
+    global fmt
+    for k in fmt.keys():
+        fmt[k] = 0
     if string_to_write:
         write_text()
     # Add empty line before table
@@ -255,9 +265,15 @@ def write_table(tab):
         for col in headers:
             cell = TableCell()
             list_parse(col, without_write=True)
-            content = P(text=string_to_write)
-            cell.addElement(content)
             add_style(cell, table_header)
+            content = P(text=string_to_write)
+            for key in fmt.keys():
+                if fmt[key] == 1:
+                    new_style = add_fmt(style=saved_styles[table_header], key=key)
+                    ods.styles.addElement(new_style)
+                    fmt[key] = 0
+                    cell = TableCell(stylename=new_style.getAttribute(attr='name'))
+            cell.addElement(content)
             string_to_write = ''
             row.addElement(cell)
         table.addElement(row)
@@ -270,9 +286,15 @@ def write_table(tab):
         for col in line:
             cell = TableCell()
             list_parse(col, without_write=True)
-            content = P(text=string_to_write)
-            cell.addElement(content)
             add_style(cell, table_content)
+            content = P(text=string_to_write)
+            for key in fmt.keys():
+                if fmt[key] == 1:
+                    new_style = add_fmt(style=saved_styles[table_content], key=key)
+                    ods.styles.addElement(new_style)
+                    fmt[key] = 0
+                    cell = TableCell(stylename=new_style.getAttribute(attr='name'))
+            cell.addElement(content)
             string_to_write = ''
             row.addElement(cell)
         table.addElement(row)
@@ -296,6 +318,8 @@ def dict_parse(dictionary, without_write=False):
     """Parse dictionaries"""
 
     global string_to_write
+    if dictionary['t'] in fmt.keys() and without_write:
+        fmt[dictionary['t']] = 1
     if dictionary['t'] == 'Table':
         write_table(dictionary)
     elif dictionary['t'] == 'CodeBlock' or dictionary['t'] == 'Code':
