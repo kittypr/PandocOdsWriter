@@ -1,20 +1,19 @@
-import json
 import argparse
+import json
 from subprocess import Popen, PIPE
-
-from lstyle import load_style, add_fmt, st_dict
 
 from odf.opendocument import OpenDocumentSpreadsheet
 from odf.style import Style, TableColumnProperties, TableRowProperties, TextProperties
 from odf.table import Table, TableRow, TableCell, TableColumn
 from odf.text import P
 
+from lstyle import load_style, add_fmt, st_dict
 
 # use command - python odswritter.py yourInputFile.yourExetention yourOutputFile.ods -s *YOUR POSITIVE NUMBER*
 # check README.md for more information
-# DO NOT miss places of intput and output
+# DO NOT mix up places of intput and output
 
-# Header 0 - just for correct index, you can add another headers, or change names of this.
+# header0 - just for correct index, you can add another headers, or change names of this.
 # If in file more, than two levels of headers, next level header will generate with name = "header" + str(level)
 # If you'll change this names, for correct work, change them in "styles1.py" for default styles
 header = ['header0', 'header1', 'header2']
@@ -37,35 +36,36 @@ parser.add_argument('--pandocversion', help='The Pandoc version.')
 args = parser.parse_args()
 
 # It is important for auto-height in text-rows:
-# if you want to change width by default (10 cm), change it in "main" , count, how much PT in your length ( in CM!!!)
-# and change this constant:
+# if you want to change width by default (10 cm), change it in 'write_sheet()',
+# count how much PT in your length ( in CM!!!) and change this constant:
 PTINTENCM = 284
 
 
 # I need this global variables, because there are two recursive functions call each other, so it would be very hard work
 # without global "string_to_write". Other ones are just make those functions much more easy to read.
 
-# Create our document:
+
 ods = OpenDocumentSpreadsheet()
-table = Table()
+table = Table()  # creating sheet
+
 string_to_write = ''
 header_level = 0
-bullet = 0
-ordered = 0
+bullet = 0  # indicating bullet lists
+ordered = 0  # indicating bullet list and used is order in item lines
 saved_styles = {}
-separator = 0
+separator = 0  # level of separating header
 
-
+# Dictionary of formatting indicators
 fmt = {'Emph': 0,
        'Strong': 0,
        'Strikeout': 0}
 
 
 def write_sheet():
-    widthwide = Style(name="Wwide", family="table-column")
-    widthwide.addElement(TableColumnProperties(columnwidth="10cm"))
-    ods.automaticstyles.addElement(widthwide)
-    table.addElement(TableColumn(stylename='Wwide'))
+    wide = Style(name="Wide", family="table-column")
+    wide.addElement(TableColumnProperties(columnwidth="10cm"))
+    ods.automaticstyles.addElement(wide)
+    table.addElement(TableColumn(stylename='Wide'))
     ods.spreadsheet.addElement(table)
 
 

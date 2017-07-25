@@ -1,47 +1,44 @@
-from odf.opendocument import load
-from odf.style import Style, TextProperties
-
-import odf.style
 import sys
 
-def_header1 = Style(name='header1', family='table-cell')
-def_header2 = Style(name='header2', family='table-cell')
-def_tablehead = Style(name='tablehead', family='table-cell')
-def_tablebody = Style(name='tablebody', family='table-cell')
-def_text = Style(name='text', family='table-cell')
-st_dict = {'header1': def_header1,
-           'header2': def_header2,
-           'tablehead': def_tablehead,
-           'tablebody': def_tablebody,
-           'text': def_text
+from odf.opendocument import load
+from odf.style import Style, TextProperties
+import odf.style
+
+# Default styles, used if there is no 'styles.ods'
+default_header1 = Style(name='header1', family='table-cell')
+default_header2 = Style(name='header2', family='table-cell')
+default_tablehead = Style(name='tablehead', family='table-cell')
+default_tablebody = Style(name='tablebody', family='table-cell')
+default_text = Style(name='text', family='table-cell')
+st_dict = {'header1': default_header1,
+           'header2': default_header2,
+           'tablehead': default_tablehead,
+           'tablebody': default_tablebody,
+           'text': default_text
            }
-i = None
-b = None
-l = None
 
 
 def bold():
-    global b
-    b = None
-    b = TextProperties(fontweight='bold')
-    return b
+    return TextProperties(fontweight='bold')
 
 
 def italic():
-    global i
-    i = None
-    i = TextProperties(fontstyle='italic')
-    return i
+    return TextProperties(fontstyle='italic')
 
 
 def line_through():
-    global l
-    l = None
-    l = TextProperties(textlinethroughstyle='solid', textlinethroughtype='single')
-    return l
+    return TextProperties(textlinethroughstyle='solid', textlinethroughtype='single')
 
 
 def load_style(name):
+    """Load styles from file.
+
+    Args:
+        name - style name
+
+    Returns:
+        style - loaded style
+    """
     global st_dict
     try:
         path = str(sys.argv[0])
@@ -55,7 +52,7 @@ def load_style(name):
         except AssertionError:
             style = None
     except FileNotFoundError:
-        print('WARNING! There is no style file, create it and name "styles.ods"')
+        print('WARNING! There is no style file, create it in script directory and name "styles.ods"')
         style = None
     if style is None:
         try:
@@ -68,6 +65,18 @@ def load_style(name):
 
 
 def add_fmt(style, key):
+    """Creates new style with formatting.
+
+    This function copies source style and adds necessary formatting.
+
+    Args:
+        style - source style
+        key - formatting
+
+    Returns:
+        new_style - new style with formatting
+
+    """
     global st_dict
     new_name = style.getAttribute('name') + key
     try:
