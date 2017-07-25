@@ -308,18 +308,26 @@ def write_table(tab):
 
 # This two functions - "dict_parse" and "list_parse", has purpose to extract readable information
 # from json object.
-# Since, pandoc's json object in it's field 'blocks' has list with dictionaries,
-# that represent another objects and this dictionaries has the following structure:
-# { t: "*Name of objects type, for example 'Str'"
+# Since, pandoc's json object in field 'blocks' has list of dictionaries or lists
+# which represent another objects and dictionaries has the following structure:
+# { t: "*Name of objects type, for example 'Str'*"
 #   c: "*Content of object, in this case any string*" }
-# (sometimes there can be no 'c'-field (f.e. "Space" - object)
+# (sometimes there can be no 'c'-field (e.g. "Space" - object)
 # So, 'c'-field - content, can be a list of dictionaries, or a string, or a list of lists,
 # so we should parse list again and etc.
 # That's why we have there two functions - for parsing lists and for parsing dictionaries - that should call each other
 
 def dict_parse(dictionary, without_write=False):
-    """Parse dictionaries"""
+    """Parse dictionaries.
 
+    Dictionary represent some json-object. Kind of json object depends on 't' (title) field of it.
+    We will parse it differently  depending on different titles. Sometimes this function write block,
+    sometimes it leaves writing special functions.
+
+    Args:
+        dictionary - object with 't' and sometimes 'c' fields.
+        without_write - indicate calling write_text() functions. By default calls it.
+    """
     global string_to_write
     global fmt
     if dictionary['t'] in fmt.keys():
@@ -361,7 +369,12 @@ def dict_parse(dictionary, without_write=False):
 
 
 def list_parse(content_list, without_write=False):
-    """Parse lists"""
+    """Parse list.
+
+    Args:
+        content_list - list with different parts of content from input-document.
+        without_write - indicate calling write_text() functions. By default calls it.
+    """
     for item in content_list:
         if type(item) == dict:
             dict_parse(item, without_write)
@@ -372,7 +385,7 @@ def list_parse(content_list, without_write=False):
 
 
 def main(doc):
-    """Main function
+    """Main function.
 
     Get JSON object from pandoc, parse it, save result.
 
