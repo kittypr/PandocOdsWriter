@@ -10,12 +10,13 @@ from odf.table import Table, TableRow, TableCell, TableColumn
 from odf.text import P
 
 
-# use command - pandoc yourInputFile.yourExetention -t json | python ODSwriter.py yourOutputFile.ods
-# DO NOT specify output file in last pandoc's command, because pandoc will rewrite it and 'kill'
+# use command - python odswritter.py yourInputFile.yourExetention yourOutputFile.ods -s *YOUR POSITIVE NUMBER*
+# check README.md for more information
+# DO NOT miss places of intput and output
 
-# Header 0 - simple text, you can add another headers, of change names of this. If in file more, than two levels
-# of headers next name will generate as name = "header" + str(level)
-# If you'll change this names, for correct work, change them in "styles1.py" for default styles1
+# Header 0 - just for correct index, you can add another headers, or change names of this.
+# If in file more, than two levels of headers, next level header will generate with name = "header" + str(level)
+# If you'll change this names, for correct work, change them in "styles1.py" for default styles
 header = ['header0', 'header1', 'header2']
 
 # Table headers and content
@@ -35,14 +36,16 @@ parser.add_argument('-s', '--separator', nargs=1, help='Header level to separate
 parser.add_argument('--pandocversion', help='The Pandoc version.')
 args = parser.parse_args()
 
-# if you want to change width by default (10 cm), change it in "main" , count, how much symbols in a string look
-# correctly for your length for auto-height, and change this tuple as you need.
-# There are 7 numbers - count of symbols for different font size - 10pt, 11pt (header lvl 6), ... , 16pt (header lvl 1)
+# It is important for auto-height in text-rows:
+# if you want to change width by default (10 cm), change it in "main" , count, how much PT in your length ( in CM!!!)
+# and change this constant:
+PTINTENCM = 284
+
 
 # I need this global variables, because there are two recursive functions call each other, so it would be very hard work
-# without global "string_to_write"
-# Moreover recursive functions are easier to read
+# without global "string_to_write". Other ones are just make those functions much more easy to read.
 
+# Create our document:
 ods = OpenDocumentSpreadsheet()
 table = Table()
 string_to_write = ''
@@ -51,7 +54,7 @@ bullet = 0
 ordered = 0
 saved_styles = {}
 separator = 0
-PTINTENCM = 284
+
 
 fmt = {'Emph': 0,
        'Strong': 0,
@@ -371,21 +374,33 @@ def list_parse(content_list, without_write=False):
 def main(doc):
     """Main function
 
-    Get JSON object from pandoc, parse it, save result
+    Get JSON object from pandoc, parse it, save result.
+
+    Args:
+        doc - json object as python dictionary or list.
+              In case of dictionary it has representation like:
+              { 'pandoc-version': ...
+                'meta': ...
+                'blocks': .......}
+              in blocks we have all file-content, we will parse doc['blocks'].
+              In case of list it has representation like:
+              [[info_list], [content_list]], so we will parse doc[1]
+
+    Raises:
+        PermissionError: when we can't write output file
     """
     global table
     output = args.output
-    # Read json object and decode it to python dictionary.
-    # It has representation like: { pandoc-version: ...
-    #                               meta: ...
-    #                               blocks: .......}
-    # in blocks we have all file-content, that's why we will parse it
-    # doc = json.loads(STDIN.read())
+
     if type(doc) == dict:
         list_parse(doc['blocks'])
-    else:
+    elif type(doc) == list:
         list_parse(doc[1])
+    else:
+        print('Incompatible Pandoc`s version')
+
     write_sheet()
+
     try:
         ods.save(output)
     except PermissionError as err:
@@ -395,15 +410,15 @@ def main(doc):
 
 if __name__ == '__main__':
     source = args.input
+
+    # Use subprocess to call pandoc and convert input file into json-object.
+
     command = 'pandoc ' + source + ' -t json'
-    proc = Popen(
-        command,
-        shell=True,
-        stdout=PIPE, stderr=PIPE
-    )
+    proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
     res = proc.communicate()
+
     if res[1]:
-        print(str(res[1]))
+        print(str(res[1]))  # sending stderr output to user
     else:
         if args.separator is None:
             d = json.loads(res[0])

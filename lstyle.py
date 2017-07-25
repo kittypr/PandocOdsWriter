@@ -1,7 +1,6 @@
 from odf.opendocument import load
 from odf.style import Style, TextProperties
-from odf.namespaces import STYLENS
-from odf.element import Element
+
 import odf.style
 import sys
 
