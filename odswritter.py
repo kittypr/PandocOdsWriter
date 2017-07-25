@@ -70,6 +70,15 @@ def write_sheet():
 
 
 def count_height(row, cell):
+    """Counting height that shows all text in cell.
+
+    This functions uses width of text-column and font size.
+
+    Args:
+        row - current row
+        cell - current cell
+
+    """
     style_name = cell.getAttribute('stylename')
     try:
         style = saved_styles[style_name]
@@ -83,17 +92,28 @@ def count_height(row, cell):
             font_size = 10
     except KeyError:
         font_size = 10
+
     symbols_in_string = PTINTENCM // font_size + 1
     height = font_size*(len(string_to_write) // symbols_in_string + 1) + 4
     height = str(height) + 'pt'
     new_name = 'heightsuit' + height
     height_suit = Style(name=new_name, family='table-row')
     height_suit.addElement(TableRowProperties(rowheight=height))
+
     ods.automaticstyles.addElement(height_suit)
     row.setAttribute(attr='stylename', value=new_name)
 
 
 def add_style(cell, name):
+    """Add style to cell element.
+
+    This function calls style loading from 'lstyle' and saves it, in order to use it again quickly.
+
+    Args:
+        cell - cell that needs to be styled
+        name - style name that will be set
+
+    """
     global saved_styles
     global ods
     try:
@@ -107,11 +127,12 @@ def add_style(cell, name):
 
 
 def write_text():
-    """Write to output file non-table elements
+    """Write to output file ordinary elements.
 
-    This function is called every tame, we collect whole paragraph or block of elements in "string_to+write"
+    This function is called every tame, we collect whole paragraph or block of elements in 'string_to_write'
     We write every block or paragraph in it's own cell in the first column of output file.
-    After writing we shift down "current_row" and clean "string_to_write" in order to collect next elements.
+    After writing we shift down current row and clean 'string_to_write' in order to collect next elements.
+
     """
     global string_to_write
     global header_level
@@ -119,17 +140,18 @@ def write_text():
     global bullet
     global table
     global separator
+
     row = TableRow()
     cell = TableCell()
     if header_level != 0 and header_level > 0:
-        if header_level > (len(header) - 1):
-            for i in range(len(header), header_level+1):
+        if header_level > (len(header) - 1):  # if there are headers with lvl bigger than 2
+            for i in range(len(header), header_level+1):  # creating names for headers with lvl bigger than 2
                 header.append('header' + str(i))
         add_style(cell, header[header_level])
-        if header_level == separator:
+        if header_level == separator:  # if separator was set, we will create new sheet in document
             if table.hasChildNodes():
                 write_sheet()
-            table = Table(name=string_to_write)
+            table = Table(name=string_to_write)  # creating new sheet with separating header as name
     else:
         add_style(cell, simple_text)
     if bullet:
@@ -162,12 +184,16 @@ def write_ord(ord_list, without_write):
 def write_code(code):
     """Write to output file code elements
 
-    Since, element with title "Code" or "CodeBlock" has special structure of 'c'(Content) field, that looks like:
-    [[0], "code"]
+    Since, element with title 'Code' or 'CodeBlock' has special structure of 'c'(Content) field, that looks like:
+    [[0], "code']
     where:
-    [0] - list of attributes: identifier, classes, key-value pairs
-    "code" - string with code
+        [0] - list of attributes: identifier, classes, key-value pairs
+        'code' - string with code
     we should parse it especially.
+
+    Args:
+        code - element with title 'Code' or 'CodeBlock'
+
     """
     global string_to_write
     string_to_write = string_to_write + code['c'][1]
@@ -181,14 +207,19 @@ def write_link(link):
 def write_math(math):
     """Write to output file code elements
 
-    Since, element with title "Math" has special structure of 'c'(Content) field, that looks like:
-    [{0}, "math"]
+    Since, element with title 'Math' has special structure of 'c'(Content) field, that looks like:
+    [{0}, 'math']
     where:
-    {0} - dictionary contains type of math
-    "math" - string with math
+        {0} - dictionary contains type of math
+        'math' - string with math
     we should parse it especially.
     TeX Math format.
+
+    Args:
+        raw - element with title 'Math'
+
     """
+    # TODO: convert TexMath to MathML and write it
     global string_to_write
     string_to_write = string_to_write + math['c'][1]
 
@@ -196,9 +227,16 @@ def write_math(math):
 def write_raw(raw):
     """Write to output file raw elements
 
-    Since, element with title "RawBlock" or "RawInline" has special structure of 'c'(Content) field, that looks like:
-    [format, "raw text"]
+    Since, element with title 'RawBlock' or 'RawInline' has special structure of 'c'(Content) field, that looks like:
+    [format, 'raw text']
+    where:
+        format - format of raw text
+        'raw text' - string with raw text
     we should parse it especially.
+
+    Args:
+        raw - element with title 'RawBlock' or 'RawInline'
+
     """
     global string_to_write
     string_to_write = string_to_write + raw['c'][1]
@@ -207,13 +245,21 @@ def write_raw(raw):
 def write_special_block(block, without_write):
     """Write special blocks with attributes
 
-    Since, element with title "Div" or "Span" or "Header" has special structure of 'c'(Content) field, that looks like:
-    [[0], [1]]
+    Since, element with title  'Div' or 'Span' or 'Header' has special structure of 'c'(Content) field, that looks like:
+    [[0], [1]]*
     where:
     [0] - list of attributes: identifier, classes, key-value pairs
     [1] - list with objects (list of dictionaries) - content
-    *with "Headers" title - [level, [0], [1]] - level - int, [0], [1] - the same as above
+
+    * with 'Header' title - [level, [0], [1]] - level - int, [0], [1] - the same as above
+
     we should parse it especially.
+    This function writes block itself.
+
+    Args:
+        block - element with title 'Div' or 'Span' or 'Header'
+        without_write - indicate calling write_text() functions. By default calls it.
+
     """
     global string_to_write
     global header_level
@@ -235,8 +281,7 @@ def write_table(tab):
     This function is called every time, we meet "Table" dictionary's title.
     Firstly, if we have some information in "string_to_write" we record it, because we'll use this
     variable to collect information from table's cells.
-    After that we found right edge if our table:
-        I don't kow why, but We cant write righter then we already have wrote in one row.
+
     Table in pandoc's json has following structure:
     dict: { t: "Table"
             c: [ [0] [1] [2] [3] [4] ]
@@ -248,22 +293,28 @@ def write_table(tab):
     [3] - is list of table's headers (top cell of every column), can be empty
     [4] - list of rows, and row is list of cells
     Since every cell's structure is the same as text's one, we just parse them as list and write one by one
+
+    Args:
+        tab - dictionary with 't': 'Table"
+
     """
     global table
     global string_to_write
     global fmt
-    for k in fmt.keys():
+
+    for k in fmt.keys():  # setting to zero all outside-table formatting, we use formatting ONLY inside table-cell
         fmt[k] = 0
-    if string_to_write:
+
+    if string_to_write:  # writing all text from buffer, table has it's own rules for rows, cols and their shift-rules
         write_text()
-    # Add empty line before table
-    row = TableRow()
+
+    row = TableRow()  # adding empty line before table
     table.addElement(row)
+
     row = TableRow()
     headers = tab['c'][3]
     if headers:
-        # Add empty first cell in row (first column in document - text column).
-        cell = TableCell()
+        cell = TableCell()  # adding empty first cell in row (first column in document - text column).
         row.addElement(cell)
         for col in headers:
             cell = TableCell()
@@ -283,7 +334,6 @@ def write_table(tab):
     t_content = tab['c'][4]
     for line in t_content:
         row = TableRow()
-        # Add empty first cell in row (first column in document - text column).
         cell = TableCell()
         row.addElement(cell)
         for col in line:
@@ -301,8 +351,8 @@ def write_table(tab):
             string_to_write = ''
             row.addElement(cell)
         table.addElement(row)
-    row = TableRow()
-    # Add empty line after table
+
+    row = TableRow()  # adding empty line after table
     table.addElement(row)
 
 
@@ -327,6 +377,7 @@ def dict_parse(dictionary, without_write=False):
     Args:
         dictionary - object with 't' and sometimes 'c' fields.
         without_write - indicate calling write_text() functions. By default calls it.
+
     """
     global string_to_write
     global fmt
@@ -374,6 +425,7 @@ def list_parse(content_list, without_write=False):
     Args:
         content_list - list with different parts of content from input-document.
         without_write - indicate calling write_text() functions. By default calls it.
+
     """
     for item in content_list:
         if type(item) == dict:
@@ -401,6 +453,7 @@ def main(doc):
 
     Raises:
         PermissionError: when we can't write output file
+
     """
     global table
     output = args.output
