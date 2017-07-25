@@ -5,7 +5,7 @@ from subprocess import Popen, PIPE
 from odf.opendocument import OpenDocumentSpreadsheet
 from odf.style import Style, TableColumnProperties, TableRowProperties, TextProperties
 from odf.table import Table, TableRow, TableCell, TableColumn
-from odf.text import P
+from odf.text import P, A, Span
 
 from lstyle import load_style, add_fmt, st_dict
 
@@ -48,6 +48,7 @@ PTINTENCM = 284
 ods = OpenDocumentSpreadsheet()
 table = Table()  # creating sheet
 
+content = P()
 string_to_write = ''
 header_level = 0
 bullet = 0  # indicating bullet lists
@@ -94,7 +95,10 @@ def count_height(row, cell):
         font_size = 10
 
     symbols_in_string = PTINTENCM // font_size + 1
-    height = font_size*(len(string_to_write) // symbols_in_string + 1) + 4
+    length = 0
+    for p in cell.getElementsByType(P):
+        length += len(p.__str__())
+    height = font_size*(length // symbols_in_string + 1) + 4
     height = str(height) + 'pt'
     new_name = 'heightsuit' + height
     height_suit = Style(name=new_name, family='table-row')
@@ -140,7 +144,7 @@ def write_text():
     global bullet
     global table
     global separator
-
+    global content
     row = TableRow()
     cell = TableCell()
     if header_level != 0 and header_level > 0:
@@ -159,8 +163,9 @@ def write_text():
     if ordered > 0:
         string_to_write = str(ordered) + ') ' + string_to_write
         ordered = ordered + 1
-    content = P(text=string_to_write)
+    content.addText(string_to_write)
     cell.addElement(content)
+    content = P()
     count_height(row, cell)
     row.addElement(cell)
     table.addElement(row)
@@ -201,7 +206,16 @@ def write_code(code):
 
 def write_link(link):
     global string_to_write
-    string_to_write = string_to_write + link['c'][2][0]
+    global content
+    content.addText(string_to_write)
+    string_to_write = ''
+    list_parse(link['c'][1], without_write=True)
+    content.addText(string_to_write)
+    string_to_write = ''
+    content.addText('(')
+    a = A(href=link['c'][2][0])
+    content.addElement(a)
+    content.addText(')')
 
 
 def write_math(math):
