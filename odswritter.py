@@ -9,6 +9,7 @@ from odf.style import Style, TableColumnProperties, TableRowProperties, TextProp
 from odf.table import Table, TableRow, TableCell, TableColumn
 from odf.text import P
 
+
 # use command - pandoc yourInputFile.yourExetention -t json | python ODSwriter.py yourOutputFile.ods
 # DO NOT specify output file in last pandoc's command, because pandoc will rewrite it and 'kill'
 
@@ -317,7 +318,8 @@ def dict_parse(dictionary, without_write=False):
     """Parse dictionaries"""
 
     global string_to_write
-    if dictionary['t'] in fmt.keys() and without_write:
+    global fmt
+    if dictionary['t'] in fmt.keys():
         fmt[dictionary['t']] = 1
     if dictionary['t'] == 'Table':
         write_table(dictionary)

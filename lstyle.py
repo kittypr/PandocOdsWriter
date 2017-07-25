@@ -1,5 +1,7 @@
 from odf.opendocument import load
 from odf.style import Style, TextProperties
+from odf.namespaces import STYLENS
+from odf.element import Element
 import odf.style
 import sys
 
@@ -14,22 +16,37 @@ st_dict = {'header1': def_header1,
            'tablebody': def_tablebody,
            'text': def_text
            }
+i = None
+b = None
+l = None
 
-bold = TextProperties(fontweight='bold')
-italic = TextProperties(fontstyle='italic')
-line_through = TextProperties(textlinethroughstyle='solid', textlinethroughtype='single')
+
+def bold():
+    global b
+    b = None
+    b = TextProperties(fontweight='bold')
+    return b
 
 
-fmt_dict = {'Strong': bold,
-            'Emph': italic,
-            'Strikeout': line_through}
+def italic():
+    global i
+    i = None
+    i = TextProperties(fontstyle='italic')
+    return i
+
+
+def line_through():
+    global l
+    l = None
+    l = TextProperties(textlinethroughstyle='solid', textlinethroughtype='single')
+    return l
 
 
 def load_style(name):
     global st_dict
     try:
         path = str(sys.argv[0])
-        path = path.replace('odswritter.py','')
+        path = path.replace('odswritter.py', '')
         path = path + 'styles.ods'
         source = load(path)
         try:
@@ -53,7 +70,6 @@ def load_style(name):
 
 def add_fmt(style, key):
     global st_dict
-    print(style.getAttribute('name'))
     new_name = style.getAttribute('name') + key
     try:
         new_style = st_dict[new_name]
@@ -92,6 +108,12 @@ def add_fmt(style, key):
                 except ValueError:
                     continue
             new_style.addElement(copy_child)
-            new_style.addElement(fmt_dict[key])
+        if key == 'Strong':
+            new_element = bold()
+        if key == 'Emph':
+            new_element = italic()
+        if key == 'Strikeout':
+            new_element = line_through()
+        new_style.addElement(new_element)
         st_dict[new_name] = new_style
     return new_style
