@@ -288,13 +288,13 @@ def write_special_block(block, without_write):
     """
     global string_to_write
     global header_level
-    content = 1
+    con = 1
     if block['t'] == 'Header':
         header_level = block['c'][0]
-        content = 2
+        con = 2
     if (not without_write) and string_to_write:
         write_text()
-    list_parse(block['c'][content], without_write=True)
+    list_parse(block['c'][con], without_write=True)
     if not without_write:
         write_text()
     header_level = 0
@@ -345,14 +345,14 @@ def write_table(tab):
             cell = TableCell()
             list_parse(col, without_write=True)
             add_style(cell, table_header)
-            content = P(text=string_to_write)
+            cell_content = P(text=string_to_write)
             for key in fmt.keys():
                 if fmt[key] == 1:
                     new_style = add_fmt(style=st_dict[cell.getAttribute(attr='stylename')], key=key)
                     ods.styles.addElement(new_style)
                     fmt[key] = 0
                     cell = TableCell(stylename=new_style.getAttribute(attr='name'))
-            cell.addElement(content)
+            cell.addElement(cell_content)
             string_to_write = ''
             row.addElement(cell)
         table.addElement(row)
@@ -365,14 +365,14 @@ def write_table(tab):
             cell = TableCell()
             list_parse(col, without_write=True)
             add_style(cell, table_content)
-            content = P(text=string_to_write)
+            cell_content = P(text=string_to_write)
             for key in fmt.keys():
                 if fmt[key] == 1:
                     new_style = add_fmt(style=st_dict[cell.getAttribute(attr='stylename')], key=key)
                     ods.styles.addElement(new_style)
                     fmt[key] = 0
                     cell = TableCell(stylename=new_style.getAttribute(attr='name'))
-            cell.addElement(content)
+            cell.addElement(cell_content)
             string_to_write = ''
             row.addElement(cell)
         table.addElement(row)
