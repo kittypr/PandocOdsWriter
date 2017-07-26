@@ -6,7 +6,7 @@ from subprocess import Popen, PIPE
 from odf.opendocument import OpenDocumentSpreadsheet
 from odf.style import Style, TableColumnProperties, TableRowProperties, TextProperties
 from odf.table import Table, TableRow, TableCell, TableColumn
-from odf.text import P, A, Span
+from odf.text import P, A
 
 from lstyle import load_style, add_fmt, st_dict
 
@@ -15,7 +15,7 @@ from lstyle import load_style, add_fmt, st_dict
 # DO NOT mix up places of intput and output
 
 # header0 - just for correct index, you can add another headers, or change names of this.
-# If in file more, than two levels of headers, next level header will generate with name = "header" + str(level)
+# If in input file more, than two levels of headers, next level header will generate with name = "header" + str(level)
 # If you'll change this names, for correct work, change them in "styles1.py" for default styles
 header = ['header0', 'header1', 'header2']
 
@@ -39,22 +39,21 @@ args = parser.parse_args()
 
 # It is important for auto-height in text-rows:
 # if you want to change width by default (10 cm), change it in 'write_sheet()',
-# count how much PT in your length ( in CM!!!) and change this constant:
+# count how much PT in your length (in CM) and change this constant:
 PTINTENCM = 284
 
 
 # I need this global variables, because there are two recursive functions call each other, so it would be very hard work
 # without global "string_to_write". Other ones are just make those functions much more easy to read.
 
-
 ods = OpenDocumentSpreadsheet()
-table = Table()  # creating sheet
+table = Table()  # creating the first sheet
 
 content = P()
 string_to_write = ''
 header_level = 0
 bullet = 0  # indicating bullet lists
-ordered = 0  # indicating bullet list and used is order in item lines
+ordered = 0  # indicating bullet list and used as order at item lines
 saved_styles = {}
 separator = 0  # level of separating header
 
@@ -389,15 +388,18 @@ def write_table(tab):
     table.addElement(row)
 
 
-# This two functions - "dict_parse" and "list_parse", has purpose to extract readable information
+# This two functions - 'dict_parse()' and 'list_parse()', has purpose of extract readable information
 # from json object.
-# Since, pandoc's json object in field 'blocks' has list of dictionaries or lists
+# Pandoc's json object in field 'blocks' has list of dictionaries or lists,
 # which represent another objects and dictionaries has the following structure:
-# { t: "*Name of objects type, for example 'Str'*"
-#   c: "*Content of object, in this case any string*" }
-# (sometimes there can be no 'c'-field (e.g. "Space" - object)
+# { 't': '*Name of objects type*',
+#   'c': '*Content of object*' }
+# e.g.:
+# { 't': 'Str',
+#   'c': 'Hello' }
+# (sometimes there can be no 'c'-field (e.g. 'Space' - object)
 # So, 'c'-field - content, can be a list of dictionaries, or a string, or a list of lists,
-# so we should parse list again and etc.
+# and we should parse list again and etc.
 # That's why we have there two functions - for parsing lists and for parsing dictionaries - that should call each other
 
 def dict_parse(dictionary, without_write=False):
