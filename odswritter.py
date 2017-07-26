@@ -210,12 +210,9 @@ def write_link(link):
     content.addText(string_to_write)
     string_to_write = ''
     list_parse(link['c'][1], without_write=True)
-    content.addText(string_to_write)
+    a = A(href=link['c'][2][0], text=string_to_write)
     string_to_write = ''
-    content.addText('(')
-    a = A(href=link['c'][2][0])
     content.addElement(a)
-    content.addText(')')
 
 
 def write_math(math):
