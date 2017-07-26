@@ -205,6 +205,20 @@ def write_code(code):
 
 
 def write_link(link):
+    """Write special blocks with attributes
+
+    Since, element with title 'Link' has special structure of 'c'(Content) field, that looks like:
+    [[atr], [1},['target', 'title']]
+        where:
+        [atr] - list of attributes: identifier, classes, key-value pairs
+        [1] - list with objects (list of dictionaries) - visible text of hyperlink
+        ['target', 'title'] - list with two strings, 'target' - URL, 'title' - title.
+    we should parse it especially.
+
+    Args:
+        link - element with title 'Link'
+
+    """
     global string_to_write
     global content
     content.addText(string_to_write)
