@@ -1,5 +1,6 @@
 import argparse
 import json
+import sys
 from subprocess import Popen, PIPE
 
 from odf.opendocument import OpenDocumentSpreadsheet
@@ -32,6 +33,7 @@ parser.add_argument('input', help='Input file. Use Pandoc`s input formats.', act
 parser.add_argument('output', help='Output file. Use .ods filename extension.', action='store')
 parser.add_argument('-s', '--separator', nargs=1, help='Header level to separate sheets, 0 by default(no separation).',
                     action='store')
+parser.add_argument('-r', '--reference', nargs=1, help='Reference to file with styles', action='store')
 parser.add_argument('--pandocversion', help='The Pandoc version.')
 args = parser.parse_args()
 
@@ -118,12 +120,18 @@ def add_style(cell, name):
         name - style name that will be set
 
     """
+    if args.reference:
+        styles_source = args.reference[0]
+    else:
+        styles_source = str(sys.argv[0])
+        styles_source = styles_source.replace('odswritter.py', '')
+        styles_source = styles_source + 'styles.ods'
     global saved_styles
     global ods
     try:
         saved_styles[name]
     except KeyError:
-        style = load_style(name)
+        style = load_style(name, styles_source)
         if style is not None:
             saved_styles[name] = style
             ods.styles.addElement(style)
@@ -190,7 +198,7 @@ def write_code(code):
     """Write to output file code elements
 
     Since, element with title 'Code' or 'CodeBlock' has special structure of 'c'(Content) field, that looks like:
-    [[0], "code']
+    [[0], 'code']
     where:
         [0] - list of attributes: identifier, classes, key-value pairs
         'code' - string with code
@@ -303,17 +311,17 @@ def write_special_block(block, without_write):
 def write_table(tab):
     """Write to output file table elements
 
-    This function is called every time, we meet "Table" dictionary's title.
-    Firstly, if we have some information in "string_to_write" we record it, because we'll use this
+    This function is called every time, we meet 'Table' dictionary's title.
+    Firstly, if we have some information in 'string_to_write' we record it, because we'll use this
     variable to collect information from table's cells.
 
     Table in pandoc's json has following structure:
-    dict: { t: "Table"
-            c: [ [0] [1] [2] [3] [4] ]
+    dict: { 't': 'Table'
+            'c': [ [0] [1] [2] [3] [4] ]
           }
     Where:
     [0] - caption
-    [1] - is list of aligns by columns, looks like: [ { t: "AlignDefault" }, ... ]
+    [1] - is list of aligns by columns, looks like: [ { t: 'AlignDefault' }, ... ]
     [2] - widths of columns
     [3] - is list of table's headers (top cell of every column), can be empty
     [4] - list of rows, and row is list of cells

@@ -30,30 +30,59 @@ def line_through():
     return TextProperties(textlinethroughstyle='solid', textlinethroughtype='single')
 
 
-def load_style(name):
+def load_style(name, file):
     """Load styles from file.
+
+    This function loads style from file using stylename and filename. If user set reference to style file,
+    this function will try to load style from it. If exception happened(no access, no such file) or user
+    didn't set reference, this function will try to load styles from default style file ('styles.ods' from
+    script directory). If exception happened(no access, no such file), this function will use build-in
+    styles (just create all styles without any formatting).
 
     Args:
         name - style name
+        file - file with styles definition
 
     Returns:
         style - loaded style
+
     """
     global st_dict
+
+    styles_source = str(sys.argv[0])
+    styles_source = styles_source.replace('odswritter.py', '')
+    styles_source = styles_source + 'styles.ods'
+
     try:
-        path = str(sys.argv[0])
-        path = path.replace('odswritter.py', '')
-        path = path + 'styles.ods'
-        source = load(path)
+        source = load(file)
         try:
             style = source.getStyleByName(name)
             style.setAttribute(attr='family', value='table-cell')
             st_dict[name] = style
         except AssertionError:
             style = None
+
     except FileNotFoundError:
-        print('WARNING! There is no style file, create it in script directory and name "styles.ods"')
-        style = None
+        if file == styles_source:
+            print('WARNING: There is no default style file, create it in script directory and name "styles.ods".\n'
+                  'Build-in style will be used.')
+            style = None
+        else:
+            print('WARNING: You entered invalid path to custom styles file, check it.\n'
+                  'Default style will be used.')
+            style = load_style(name, styles_source)
+
+    except PermissionError as err:
+        print(err.strerror)
+        if file == styles_source:
+            print('WARNING: There is no access to default style file. Check default style file settings.\n'
+                  'Build-in style will be used.')
+            style = None
+        else:
+            print('WARNING: There is no access to your style file. Check setings of your style file.\n'
+                  'Default style will be used.')
+            style = load_style(name, styles_source)
+
     if style is None:
         try:
             style = st_dict[name]
@@ -61,6 +90,7 @@ def load_style(name):
             s = Style(name=name, family='table-cell')
             st_dict[name] = s
             style = st_dict[name]
+
     return style
 
 
