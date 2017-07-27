@@ -7,8 +7,10 @@ from odf.opendocument import OpenDocumentSpreadsheet
 from odf.style import Style, TableColumnProperties, TableRowProperties, TextProperties
 from odf.table import Table, TableRow, TableCell, TableColumn
 from odf.text import P, A
+from odf.draw import Image, Frame
 
 from lstyle import load_style, add_fmt, st_dict
+from limages import load_images
 
 # use command - python odswritter.py yourInputFile.yourExetention yourOutputFile.ods -s *YOUR POSITIVE NUMBER*
 # check README.md for more information
@@ -41,7 +43,7 @@ args = parser.parse_args()
 # if you want to change width by default (10 cm), change it in 'write_sheet()',
 # count how much PT in your length (in CM) and change this constant:
 PTINTENCM = 284
-
+ININTENCM = 3.9
 
 # I need this global variables, because there are two recursive functions call each other, so it would be very hard work
 # without global "string_to_write". Other ones are just make those functions much more easy to read.
@@ -54,6 +56,8 @@ string_to_write = ''
 header_level = 0
 bullet = 0  # indicating bullet lists
 ordered = 0  # indicating bullet list and used as order at item lines
+image_counter = 0
+saved_hr = None
 saved_styles = {}
 separator = 0  # level of separating header
 
@@ -107,6 +111,28 @@ def count_height(row, cell):
 
     ods.automaticstyles.addElement(height_suit)
     row.setAttribute(attr='stylename', value=new_name)
+
+
+def count_size(wh_list, row):
+    width = float(wh_list[0][1].replace('in', ''))
+    height = float(wh_list[1][1].replace('in', ''))
+    if width > ININTENCM:
+        new_width = ININTENCM
+        new_height = height * new_width / width
+    else:
+        new_width = width
+        new_height = height
+    height_set = str(new_height)+'in'
+    new_name = 'image' + str(image_counter)
+    height_suit = Style(name=new_name, family='table-row')
+    height_suit.addElement(TableRowProperties(rowheight=height_set))
+
+    ods.automaticstyles.addElement(height_suit)
+    row.setAttribute(attr='stylename', value=new_name)
+
+    new_width = str(new_width) + 'in'
+    new_height = height_set
+    return new_width, new_height
 
 
 def add_style(cell, name):
@@ -178,6 +204,32 @@ def write_text():
     table.addElement(row)
     string_to_write = ''
 
+
+def write_image(image):
+    global image_counter
+    global saved_hr
+    if image_counter == -1:
+        return
+    if image_counter == 0:
+        saved_hr = load_images(args.input, ods)
+        if len(saved_hr) == 0:
+            image_counter = -1
+            return
+    if string_to_write:
+        write_text()
+    row = TableRow()
+    cell = TableCell()
+    w, h = count_size(image['c'][0][2], row)
+    print(w,h)
+    frame = Frame(width=w, height=h)
+    img = Image(href=saved_hr[image_counter])
+
+    table.addElement(row)
+    row.addElement(cell)
+    cell.addElement(frame)
+    frame.addElement(img)
+
+    image_counter = image_counter + 1
 
 def write_bullet(bull_list, without_write):
     global bullet
@@ -432,6 +484,8 @@ def dict_parse(dictionary, without_write=False):
         write_bullet(dictionary, without_write)
     elif dictionary['t'] == 'OrderedList':
         write_ord(dictionary, without_write)
+    elif dictionary['t'] == 'Image':
+        write_image(dictionary)
     elif 'c' in dictionary:
         if type(dictionary['c']) == str:
             string_to_write = string_to_write + dictionary['c']
