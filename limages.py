@@ -5,10 +5,9 @@ from odf.opendocument import load
 img_dict = {}
 
 
-
 def load_images(input_file, ods):
     cur_dir = str(sys.argv[0])
-    cur_dir = cur_dir.replace('limages.py', '')
+    cur_dir = cur_dir.replace('odswritter.py', '')
     output_file = cur_dir + 'tmp.odt'
     command = 'pandoc ' + input_file + ' -o ' + output_file
     proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)
@@ -21,7 +20,6 @@ def load_images(input_file, ods):
     for k in odffile.Pictures.keys():
         img_dict[k] = odffile.Pictures[k][1]
 
-    global hr_list
     hr_list = [i for i in range(0, len(img_dict))]
     hr_index = len(img_dict) - 1
     for img_name in img_dict:

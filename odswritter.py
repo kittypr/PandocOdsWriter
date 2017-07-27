@@ -220,7 +220,6 @@ def write_image(image):
     row = TableRow()
     cell = TableCell()
     w, h = count_size(image['c'][0][2], row)
-    print(w,h)
     frame = Frame(width=w, height=h)
     img = Image(href=saved_hr[image_counter])
 
@@ -230,6 +229,7 @@ def write_image(image):
     frame.addElement(img)
 
     image_counter = image_counter + 1
+
 
 def write_bullet(bull_list, without_write):
     global bullet
