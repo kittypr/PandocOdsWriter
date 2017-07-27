@@ -4,7 +4,7 @@ from odf.opendocument import load
 from odf.style import Style, TextProperties
 import odf.style
 
-# Default styles, used if there is no 'styles.ods'
+# Build-in styles, used if there is no 'styles.ods'
 default_header1 = Style(name='header1', family='table-cell')
 default_header2 = Style(name='header2', family='table-cell')
 default_tablehead = Style(name='tablehead', family='table-cell')

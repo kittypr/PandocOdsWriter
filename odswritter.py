@@ -12,22 +12,22 @@ from odf.draw import Image, Frame
 from lstyle import load_style, add_fmt, st_dict
 from limages import load_images
 
-# use command - python odswritter.py yourInputFile.yourExetention yourOutputFile.ods -s *YOUR POSITIVE NUMBER*
-# check README.md for more information
-# DO NOT mix up places of intput and output
+# usage - python odswritter.py yourInputFile.yourExetention yourOutputFile.ods -s *YOUR POSITIVE NUMBER*
+# check README.md for more information.
+# DO NOT mix up places of intput and output.
 
 # header0 - just for correct index, you can add another headers, or change names of this.
-# If in input file more, than two levels of headers, next level header will generate with name = "header" + str(level)
-# If you'll change this names, for correct work, change them in "styles1.py" for default styles
+# If in input file more, than two levels of headers, next level header will generate with name = "header" + str(level).
+# If you'll change this names, for correct work, change them in "styles1.py" for default styles.
 header = ['header0', 'header1', 'header2']
 
-# Table headers and content
+# Table headers and content.
 table_header = 'tablehead'
 table_content = 'tablebody'
 simple_text = 'text'
 
 
-# Read the command-line arguments
+# Read the command-line arguments.
 parser = argparse.ArgumentParser(description='Pandoc ODS writer. This is Pandoc filter, but there is no opportunity '
                                              'write .ods files easier way. So, use "out.ods" '
                                              'option to write .ods files with this filter')
@@ -43,6 +43,7 @@ args = parser.parse_args()
 # if you want to change width by default (10 cm), change it in 'write_sheet()',
 # count how much PT in your length (in CM) and change this constant:
 PTINTENCM = 284
+# count how much IN in your length (in CM) and change this constant:
 ININTENCM = 3.9
 
 # I need this global variables, because there are two recursive functions call each other, so it would be very hard work
@@ -61,7 +62,7 @@ saved_hr = None
 saved_styles = {}
 separator = 0  # level of separating header
 
-# Dictionary of formatting indicators
+# Dictionary of formatting indicators.
 fmt = {'Emph': 0,
        'Strong': 0,
        'Strikeout': 0}
@@ -81,8 +82,8 @@ def count_height(row, cell):
     This functions uses width of text-column and font size.
 
     Args:
-        row - current row
-        cell - current cell
+        row - current row.
+        cell - current cell.
 
     """
     style_name = cell.getAttribute('stylename')
@@ -114,8 +115,22 @@ def count_height(row, cell):
 
 
 def count_size(wh_list, row):
-    width = float(wh_list[0][1].replace('in', ''))
-    height = float(wh_list[1][1].replace('in', ''))
+    """Count height of image row.
+
+    Args:
+        wh_list - list with attributes, contains width and height:
+        row - image row.
+
+    """
+    height, width = -1, -1
+    for l in wh_list:
+        if l[0] == 'width':
+            width = float(l[1].replace('in', ''))
+        if l[0] == 'height':
+            height = float(l[1].replace('in', ''))
+    if height == -1 or width == -1:
+        width = ININTENCM
+        height = ININTENCM
     if width > ININTENCM:
         new_width = ININTENCM
         new_height = height * new_width / width
@@ -141,8 +156,8 @@ def add_style(cell, name):
     This function calls style loading from 'lstyle' and saves it, in order to use it again quickly.
 
     Args:
-        cell - cell that needs to be styled
-        name - style name that will be set
+        cell - cell that needs to be styled.
+        name - style name that will be set.
 
     """
     if args.reference:
@@ -206,6 +221,21 @@ def write_text():
 
 
 def write_image(image):
+    """Write to output file image elements.
+
+    Since, element with title 'Image' has special structure of 'c'(Content) field, that looks like:
+    [[0], [1], [2]]
+    where:
+        [0] - list of attributes: identifier, classes, key-value pairs:
+            ['id', [], [ ... , ['weight', '...in'], ['height', '...in'], ... ] - we get sizes there.
+        [1] - caption.
+        [2] - ['src', 'title'] - source and title of image.
+    we should parse it especially.
+
+    Args:
+        image - element with title 'Image'.
+
+    """
     global image_counter
     global saved_hr
     if image_counter == -1:
@@ -246,17 +276,17 @@ def write_ord(ord_list, without_write):
 
 
 def write_code(code):
-    """Write to output file code elements
+    """Write to output file code elements.
 
     Since, element with title 'Code' or 'CodeBlock' has special structure of 'c'(Content) field, that looks like:
     [[0], 'code']
     where:
-        [0] - list of attributes: identifier, classes, key-value pairs
-        'code' - string with code
+        [0] - list of attributes: identifier, classes, key-value pairs.
+        'code' - string with code.
     we should parse it especially.
 
     Args:
-        code - element with title 'Code' or 'CodeBlock'
+        code - element with title 'Code' or 'CodeBlock'.
 
     """
     global string_to_write
@@ -264,18 +294,18 @@ def write_code(code):
 
 
 def write_link(link):
-    """Write special blocks with attributes
+    """Write special blocks with attributes.
 
     Since, element with title 'Link' has special structure of 'c'(Content) field, that looks like:
     [[atr], [1},['target', 'title']]
         where:
-        [atr] - list of attributes: identifier, classes, key-value pairs
-        [1] - list with objects (list of dictionaries) - visible text of hyperlink
+        [atr] - list of attributes: identifier, classes, key-value pairs.
+        [1] - list with objects (list of dictionaries) - visible text of hyperlink.
         ['target', 'title'] - list with two strings, 'target' - URL, 'title' - title.
     we should parse it especially.
 
     Args:
-        link - element with title 'Link'
+        link - element with title 'Link'.
 
     """
     global string_to_write
@@ -292,34 +322,34 @@ def write_math(math):
     """Write to output file code elements
 
     Since, element with title 'Math' has special structure of 'c'(Content) field, that looks like:
-    [{0}, 'math']
+    [{0}, 'math'].
     where:
-        {0} - dictionary contains type of math
-        'math' - string with math
+        {0} - dictionary contains type of math.
+        'math' - string with math.
     we should parse it especially.
     TeX Math format.
 
     Args:
-        raw - element with title 'Math'
+        raw - element with title 'Math'.
 
     """
-    # TODO: convert TexMath to MathML and write it
+    # TODO: write it
     global string_to_write
     string_to_write = string_to_write + math['c'][1]
 
 
 def write_raw(raw):
-    """Write to output file raw elements
+    """Write to output file raw elements.
 
     Since, element with title 'RawBlock' or 'RawInline' has special structure of 'c'(Content) field, that looks like:
     [format, 'raw text']
     where:
-        format - format of raw text
-        'raw text' - string with raw text
+        format - format of raw text.
+        'raw text' - string with raw text.
     we should parse it especially.
 
     Args:
-        raw - element with title 'RawBlock' or 'RawInline'
+        raw - element with title 'RawBlock' or 'RawInline'.
 
     """
     global string_to_write
@@ -327,21 +357,21 @@ def write_raw(raw):
 
 
 def write_special_block(block, without_write):
-    """Write special blocks with attributes
+    """Write special blocks with attributes.
 
     Since, element with title  'Div' or 'Span' or 'Header' has special structure of 'c'(Content) field, that looks like:
     [[0], [1]]*
     where:
-    [0] - list of attributes: identifier, classes, key-value pairs
-    [1] - list with objects (list of dictionaries) - content
+    [0] - list of attributes: identifier, classes, key-value pairs.
+    [1] - list with objects (list of dictionaries) - content.
 
-    * with 'Header' title - [level, [0], [1]] - level - int, [0], [1] - the same as above
+    * with 'Header' title - [level, [0], [1]] - level - int, [0], [1] - the same as above.
 
     we should parse it especially.
     This function writes block itself.
 
     Args:
-        block - element with title 'Div' or 'Span' or 'Header'
+        block - element with title 'Div' or 'Span' or 'Header'.
         without_write - indicate calling write_text() functions. By default calls it.
 
     """
@@ -360,7 +390,7 @@ def write_special_block(block, without_write):
 
 
 def write_table(tab):
-    """Write to output file table elements
+    """Write to output file table elements.
 
     This function is called every time, we meet 'Table' dictionary's title.
     Firstly, if we have some information in 'string_to_write' we record it, because we'll use this
@@ -371,15 +401,15 @@ def write_table(tab):
             'c': [ [0] [1] [2] [3] [4] ]
           }
     Where:
-    [0] - caption
-    [1] - is list of aligns by columns, looks like: [ { t: 'AlignDefault' }, ... ]
-    [2] - widths of columns
-    [3] - is list of table's headers (top cell of every column), can be empty
-    [4] - list of rows, and row is list of cells
-    Since every cell's structure is the same as text's one, we just parse them as list and write one by one
+    [0] - caption.
+    [1] - is list of aligns by columns, looks like: [ { t: 'AlignDefault' }, ... ].
+    [2] - widths of columns.
+    [3] - is list of table's headers (top cell of every column), can be empty.
+    [4] - list of rows, and row is list of cells.
+    Since every cell's structure is the same as text's one, we just parse them as list and write one by one.
 
     Args:
-        tab - dictionary with 't': 'Table"
+        tab - dictionary with 't': 'Table".
 
     """
     global table
@@ -538,10 +568,10 @@ def main(doc):
                 'blocks': .......}
               in blocks we have all file-content, we will parse doc['blocks'].
               In case of list it has representation like:
-              [[info_list], [content_list]], so we will parse doc[1]
+              [[info_list], [content_list]], so we will parse doc[1].
 
     Raises:
-        PermissionError: when we can't write output file
+        PermissionError: when we can't write output file.
 
     """
     global table
