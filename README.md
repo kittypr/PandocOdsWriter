@@ -20,12 +20,12 @@ More information:
 
 More information about styles usage: 
 1) Use 'styles.ods' in script directory to change default styles. **DO NOT** delete it.
-2) If you create yourown styles, you should defenid this ones:
+2) If you create yourown styles, you should declare this ones:
  - 'tablehead' - for table's headers. Pandoc makes first row - header row usually.
  - 'tablebody' - for table content.
  - 'header1' - first level header.
  - ...
- - 'header55' - 55 level header (defenid as many as you need).
+ - 'header55' - 55 level header (declare as many as you need).
  - 'text' - just simple text in text row.
  **ALWAYS USE THIS NAMES.**
 
