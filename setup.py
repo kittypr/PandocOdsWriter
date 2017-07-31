@@ -1,6 +1,6 @@
 from codecs import open
 from os import path
-from setuptools import setup
+from setuptools import setup, find_packages
 
 here = path.abspath(path.dirname(__file__))
 
@@ -28,5 +28,6 @@ setup(
     ],
 
     keywords='ods pandoc writter',
-    py_modules=['odswritter', 'limages', 'lstyle'],
+    #py_modules=['odswritter', 'limages', 'lstyle'],
+    packages=find_packages()
 )

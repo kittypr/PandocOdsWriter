@@ -3,14 +3,14 @@ import json
 import sys
 from subprocess import Popen, PIPE
 
+from lstyle import load_style, add_fmt, st_dict
+from odf.draw import Image, Frame
 from odf.opendocument import OpenDocumentSpreadsheet
 from odf.style import Style, TableColumnProperties, TableRowProperties, TextProperties
 from odf.table import Table, TableRow, TableCell, TableColumn
 from odf.text import P, A
-from odf.draw import Image, Frame
 
-from lstyle import load_style, add_fmt, st_dict
-from limages import load_images
+from pandocodswritter.limages import load_images
 
 # usage - python odswritter.py yourInputFile.yourExetention yourOutputFile.ods -s *YOUR POSITIVE NUMBER*
 # check README.md for more information.
