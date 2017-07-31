@@ -8,7 +8,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='odswritter',
+    name='pandocodswritter',
     version='1.0',
 
     description='Pandoc`s writter for .ods files.',
