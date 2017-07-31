@@ -8,13 +8,13 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
     long_description = f.read()
 
 setup(
-    name='pandocodswritter',
+    name='pandocodswriter',
     version='1.0',
 
-    description='Pandoc`s writter for .ods files.',
+    description='Pandoc`s writer for .ods files.',
     long_description=long_description,
 
-    url='https://github.com/kittypr/PandocOdsWritter',
+    url='https://github.com/kittypr/PandocOdsWriter',
 
     author='Julia Zhuk',
     author_email='julettazhuk@gmail.com',
@@ -27,7 +27,7 @@ setup(
         'Programming Language :: Python :: 3.5',
     ],
 
-    keywords='ods pandoc writter',
+    keywords='ods pandoc writer',
 
     packages=find_packages()
 )

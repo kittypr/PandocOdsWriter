@@ -23,7 +23,7 @@ def load_images(input_file, ods):
 
     """
     cur_dir = str(sys.argv[0])
-    cur_dir = cur_dir.replace('odswritter.py', '')
+    cur_dir = cur_dir.replace('odswriter.py', '')
     output_file = cur_dir + 'tmp.odt'
     command = 'pandoc ' + input_file + ' -o ' + output_file
     proc = Popen(command, shell=True, stdout=PIPE, stderr=PIPE)

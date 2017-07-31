@@ -3,16 +3,20 @@ import json
 import sys
 from subprocess import Popen, PIPE
 
-from lstyle import load_style, add_fmt, st_dict
+
 from odf.draw import Image, Frame
 from odf.opendocument import OpenDocumentSpreadsheet
 from odf.style import Style, TableColumnProperties, TableRowProperties, TextProperties
 from odf.table import Table, TableRow, TableCell, TableColumn
 from odf.text import P, A
 
-from pandocodswritter.limages import load_images
-
-# usage - python odswritter.py yourInputFile.yourExetention yourOutputFile.ods -s *YOUR POSITIVE NUMBER*
+if __name__ == '__main__':
+    from limages import load_images
+    from lstyle import load_style, add_fmt, st_dict
+else:
+    from pandocodswriter.limages import load_images
+    from pandocodswriter.lstyle import load_style, add_fmt, st_dict
+# usage - python odswriter.py yourInputFile.yourExetention yourOutputFile.ods -s *YOUR POSITIVE NUMBER*
 # check README.md for more information.
 # DO NOT mix up places of intput and output.
 
@@ -164,7 +168,7 @@ def add_style(cell, name):
         styles_source = args.reference[0]
     else:
         styles_source = str(sys.argv[0])
-        styles_source = styles_source.replace('odswritter.py', '')
+        styles_source = styles_source.replace('odswriter.py', '')
         styles_source = styles_source + 'styles.ods'
     global saved_styles
     global ods

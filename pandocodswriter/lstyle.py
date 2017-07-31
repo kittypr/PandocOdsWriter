@@ -50,7 +50,7 @@ def load_style(name, file):
     global st_dict
 
     styles_source = str(sys.argv[0])
-    styles_source = styles_source.replace('odswritter.py', '')
+    styles_source = styles_source.replace('odswriter.py', '')
     styles_source = styles_source + 'styles.ods'
 
     try:

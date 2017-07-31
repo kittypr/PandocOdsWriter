@@ -2,7 +2,7 @@
 This is Pandoc's 'filter', that write .ODS files from Pandoc-json object.
 
 Usage:
-*python odswritter.py inputfile outputfile.ods -s N -r yourstyles.ods*
+*python odswriter.py inputfile outputfile.ods -s N -r yourstyles.ods*
 
 where is - N - integer, header level, that separate sheets. 
          - yourstyles.ods - .ods file you want to use as styles source.
