@@ -29,4 +29,6 @@ setup(
     ],
 
     keywords='ods pandoc writter',
+
+    py_modules=['odswritter', 'limages', 'lstyle']
 )
