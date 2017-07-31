@@ -1,6 +1,6 @@
 # ODS
 This is Pandoc's 'filter', that write .ODS files from Pandoc-json object.
-
+**Tested with Pandoc version 1.19.2.1**
 Usage:
 *python odswriter.py inputfile outputfile.ods -s N -r yourstyles.ods*
 
@@ -28,5 +28,6 @@ More information about styles usage:
  - ...
  - 'header55' - 55 level header (declare as many as you need).
  - 'text' - just simple text in text row.
- **ALWAYS USE THIS NAMES.**
+**ALWAYS USE THIS NAMES.**
+
 
