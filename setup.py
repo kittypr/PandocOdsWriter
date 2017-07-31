@@ -2,6 +2,8 @@ from codecs import open
 from os import path
 from setuptools import setup, find_packages
 
+
+
 here = path.abspath(path.dirname(__file__))
 
 with open(path.join(here, 'README.md'), encoding='utf-8') as f:
@@ -28,6 +30,5 @@ setup(
     ],
 
     keywords='ods pandoc writter',
-
-    packages=find_packages(exclude=['odswritter'])
+    py_modules=['odswritter', 'limages', 'lstyle'],
 )
