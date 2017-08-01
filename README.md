@@ -1,4 +1,4 @@
-# ODS
+# Pandoc ODS writer
 This is Pandoc's 'filter', that write .ODS files from Pandoc-json object.
 
 **Tested with Pandoc version 1.19.2.1 and 1.17.2**
