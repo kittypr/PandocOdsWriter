@@ -20,12 +20,11 @@ else:
 # check README.md for more information.
 # DO NOT mix up places of intput and output.
 
-# header0 - just for correct index, you can add another headers, or change names of this.
-# If in input file more, than two levels of headers, next level header will generate with name = "header" + str(level).
-# If you'll change this names, for correct work, change them in "styles1.py" for default styles.
+# Style names.
+# header0 - just for correct index.
+# If in input file more, than two levels of headers, next level header will generate automatically
+#  with name = "header" + str(level).
 header = ['header0', 'header1', 'header2']
-
-# Table headers and content.
 table_header = 'tablehead'
 table_content = 'tablebody'
 simple_text = 'text'
@@ -40,7 +39,6 @@ parser.add_argument('output', help='Output file. Use .ods filename extension.', 
 parser.add_argument('-s', '--separator', nargs=1, help='Header level to separate sheets, 0 by default(no separation).',
                     action='store')
 parser.add_argument('-r', '--reference', nargs=1, help='Reference to file with styles', action='store')
-parser.add_argument('--pandocversion', help='The Pandoc version.')
 args = parser.parse_args()
 
 # It is important for auto-height in text-rows:
@@ -62,8 +60,8 @@ header_level = 0
 bullet = 0  # indicating bullet lists
 ordered = 0  # indicating bullet list and used as order at item lines
 image_counter = 0
-saved_hr = None
-saved_styles = {}
+saved_hr = None  # list of hardreferences to loaded images
+saved_styles = {}  # We will save styles in order to not downloading it again each time we use it.
 separator = 0  # level of separating header
 
 # Dictionary of formatting indicators.
@@ -502,44 +500,47 @@ def dict_parse(dictionary, without_write=False):
     """
     global string_to_write
     global fmt
-    if dictionary['t'] in fmt.keys():
-        fmt[dictionary['t']] = 1
-    if dictionary['t'] == 'Table':
-        write_table(dictionary)
-    elif dictionary['t'] == 'CodeBlock' or dictionary['t'] == 'Code':
-        write_code(dictionary)
-    elif dictionary['t'] == 'Div' or dictionary['t'] == 'Span' or dictionary['t'] == 'Header':
-        write_special_block(dictionary, without_write)
-    elif dictionary['t'] == 'Math':
-        write_math(dictionary)
-    elif dictionary['t'] == 'Link':
-        write_link(dictionary)
-    elif dictionary['t'] == 'BulletList':
-        write_bullet(dictionary, without_write)
-    elif dictionary['t'] == 'OrderedList':
-        write_ord(dictionary, without_write)
-    elif dictionary['t'] == 'Image':
-        write_image(dictionary)
-    elif 'c' in dictionary:
-        if type(dictionary['c']) == str:
-            string_to_write = string_to_write + dictionary['c']
-        if type(dictionary['c']) == list:
-            list_parse(dictionary['c'], without_write)
-    else:
-        if dictionary['t'] == 'Space':
-            string_to_write = string_to_write + ' '
-        elif dictionary['t'] == 'SoftBreak':
+    try:
+        if dictionary['t'] in fmt.keys():
+            fmt[dictionary['t']] = 1
+        if dictionary['t'] == 'Table':
+            write_table(dictionary)
+        elif dictionary['t'] == 'CodeBlock' or dictionary['t'] == 'Code':
+            write_code(dictionary)
+        elif dictionary['t'] == 'Div' or dictionary['t'] == 'Span' or dictionary['t'] == 'Header':
+            write_special_block(dictionary, without_write)
+        elif dictionary['t'] == 'Math':
+            write_math(dictionary)
+        elif dictionary['t'] == 'Link':
+            write_link(dictionary)
+        elif dictionary['t'] == 'BulletList':
+            write_bullet(dictionary, without_write)
+        elif dictionary['t'] == 'OrderedList':
+            write_ord(dictionary, without_write)
+        elif dictionary['t'] == 'Image':
+            write_image(dictionary)
+        elif 'c' in dictionary:
+            if type(dictionary['c']) == str:
+                string_to_write = string_to_write + dictionary['c']
+            if type(dictionary['c']) == list:
+                list_parse(dictionary['c'], without_write)
+        else:
+            if dictionary['t'] == 'Space':
+                string_to_write = string_to_write + ' '
+            elif dictionary['t'] == 'SoftBreak':
+                string_to_write = string_to_write + '\n'
+            elif dictionary['t'] == 'LineBreak':
+                string_to_write = string_to_write + '\n\n'
+                if not without_write:
+                    write_text()
+            else:
+                string_to_write = string_to_write
+        if dictionary['t'] == 'Para':
             string_to_write = string_to_write + '\n'
-        elif dictionary['t'] == 'LineBreak':
-            string_to_write = string_to_write + '\n\n'
             if not without_write:
                 write_text()
-        else:
-            string_to_write = string_to_write
-    if dictionary['t'] == 'Para':
-        string_to_write = string_to_write + '\n'
-        if not without_write:
-            write_text()
+    except KeyError:
+        print('Incompatible Pandoc version')
 
 
 def list_parse(content_list, without_write=False):
@@ -586,7 +587,7 @@ def main(doc):
     elif type(doc) == list:
         list_parse(doc[1])
     else:
-        print('Incompatible Pandoc`s version')
+        print('Incompatible Pandoc version')
 
     write_sheet()
 
