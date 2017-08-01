@@ -23,7 +23,7 @@ More information:
 4) Pandoc replaces underline with italic.
 
 More information about styles usage: 
-1) Create 'styles.ods' (or download it https://github.com/kittypr/PandocOdsWritter) in script's directory.
+1) Create 'styles.ods' with following styles (or download it https://github.com/kittypr/PandocOdsWritter) in script's directory.
    This file will be used as default style file.
 2) If you create your own styles and use it with '-r mystyles.ods', you should declare style with the following name:
  - 'tablehead' - for table's headers. Pandoc makes first row the header row usually.
