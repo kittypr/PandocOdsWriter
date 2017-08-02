@@ -30,6 +30,6 @@ setup(
     keywords='ods pandoc writer',
 
     install_requires=['odfpy==1.3.5'],
-    
+
     packages=find_packages()
 )

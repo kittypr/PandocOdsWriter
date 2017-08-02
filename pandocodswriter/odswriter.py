@@ -10,12 +10,8 @@ from odf.style import Style, TableColumnProperties, TableRowProperties, TextProp
 from odf.table import Table, TableRow, TableCell, TableColumn
 from odf.text import P, A
 
-if __name__ == '__main__':
-    from limages import load_images
-    from lstyle import load_style, add_fmt, st_dict
-else:
-    from pandocodswriter.limages import load_images
-    from pandocodswriter.lstyle import load_style, add_fmt, st_dict
+from pandocodswriter.limages import load_images
+from pandocodswriter.lstyle import load_style, add_fmt, st_dict
 # usage - python odswriter.py yourInputFile.yourExetention yourOutputFile.ods -s *YOUR POSITIVE NUMBER*
 # check README.md for more information.
 # DO NOT mix up places of intput and output.
