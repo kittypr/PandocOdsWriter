@@ -31,7 +31,7 @@ setup(
 
     install_requires=['odfpy==1.3.5'],
 
-    scripts=['pandocodswriter/odswriter'],
+    scripts=['pandocodswriter/odswriter.py'],
 
     packages=find_packages()
 )
