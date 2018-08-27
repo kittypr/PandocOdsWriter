@@ -1,3 +1,6 @@
+### disclaimer:
+if someone will read source code, I'm sorry, it was my first try with python and real project, there are lot of stupid parts.
+
 # Pandoc ODS writer
 This is Pandoc's 'filter', that write .ODS files from Pandoc-json object.
 
