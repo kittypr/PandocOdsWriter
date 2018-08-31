@@ -553,8 +553,6 @@ def list_parse(content_list, without_write=False):
             dict_parse(item, without_write)
         if type(item) == list:
             list_parse(item, without_write)
-        else:
-            continue
 
 
 def main(doc):
